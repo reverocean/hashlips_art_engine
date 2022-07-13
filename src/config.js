@@ -1,6 +1,6 @@
 const basePath = process.cwd();
-const { MODE } = require(`${basePath}/constants/blend_mode.js`);
-const { NETWORK } = require(`${basePath}/constants/network.js`);
+const {MODE} = require(`${basePath}/constants/blend_mode.js`);
+const {NETWORK} = require(`${basePath}/constants/network.js`);
 
 const network = NETWORK.eth;
 
@@ -24,15 +24,22 @@ const solanaMetadata = {
 // If you have selected Solana then the collection starts from 0 automatically
 const layerConfigurations = [
   {
-    growEditionSizeTo: 5,
+    growEditionSizeTo: 10,
     layersOrder: [
-      { name: "Background" },
-      { name: "Eyeball" },
-      { name: "Eye color" },
-      { name: "Iris" },
-      { name: "Shine" },
-      { name: "Bottom lid" },
-      { name: "Top lid" },
+      {name: "Background"},
+      {
+        name: "Eyeball",
+      },
+      {
+        name: "Eye color",
+        // options: {
+        //   random: true
+        // }
+      },
+      {name: "Iris"},
+      {name: "Shine"},
+      {name: "Bottom lid"},
+      {name: "Top lid"},
     ],
   },
 ];

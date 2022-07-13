@@ -1,8 +1,8 @@
 const basePath = process.cwd();
-const { NETWORK } = require(`${basePath}/constants/network.js`);
+const {NETWORK} = require(`${basePath}/constants/network.js`);
 const fs = require("fs");
 const sha1 = require(`${basePath}/node_modules/sha1`);
-const { createCanvas, loadImage } = require(`${basePath}/node_modules/canvas`);
+const {createCanvas, loadImage} = require(`${basePath}/node_modules/canvas`);
 const buildDir = `${basePath}/build`;
 const layersDir = `${basePath}/layers`;
 const {
@@ -35,7 +35,7 @@ let hashlipsGiffer = null;
 
 const buildSetup = () => {
   if (fs.existsSync(buildDir)) {
-    fs.rmdirSync(buildDir, { recursive: true });
+    fs.rmdirSync(buildDir, {recursive: true});
   }
   fs.mkdirSync(buildDir);
   fs.mkdirSync(`${buildDir}/json`);
@@ -105,6 +105,10 @@ const layersSetup = (layersOrder) => {
     bypassDNA:
       layerObj.options?.["bypassDNA"] !== undefined
         ? layerObj.options?.["bypassDNA"]
+        : false,
+    random:
+      layerObj.options?.["random"] !== undefined
+        ? layerObj.options?.["random"]
         : false,
   }));
   return layers;
@@ -183,7 +187,7 @@ const loadLayerImg = async (_layer) => {
   try {
     return new Promise(async (resolve) => {
       const image = await loadImage(`${_layer.selectedElement.path}`);
-      resolve({ layer: _layer, loadedImage: image });
+      resolve({layer: _layer, loadedImage: image});
     });
   } catch (error) {
     console.error("Error loading image:", error);
@@ -203,23 +207,27 @@ const drawElement = (_renderObject, _index, _layersLen) => {
   ctx.globalCompositeOperation = _renderObject.layer.blend;
   text.only
     ? addText(
-        `${_renderObject.layer.name}${text.spacer}${_renderObject.layer.selectedElement.name}`,
-        text.xGap,
-        text.yGap * (_index + 1),
-        text.size
-      )
+      `${_renderObject.layer.name}${text.spacer}${_renderObject.layer.selectedElement.name}`,
+      text.xGap,
+      text.yGap * (_index + 1),
+      text.size
+    )
     : ctx.drawImage(
-        _renderObject.loadedImage,
-        0,
-        0,
-        format.width,
-        format.height
-      );
+      _renderObject.loadedImage,
+      0,
+      0,
+      format.width,
+      format.height
+    );
 
   addAttributes(_renderObject);
 };
 
 const constructLayerToDna = (_dna = "", _layers = []) => {
+  const layers = _layers.filter((layer, index) => {
+    const dna = _dna.split(DNA_DELIMITER)[index];
+    return dna.indexOf("random") == -1;
+  });
   let mappedDnaToLayers = _layers.map((layer, index) => {
     let selectedElement = layer.elements.find(
       (e) => e.id == cleanDna(_dna.split(DNA_DELIMITER)[index])
@@ -231,7 +239,11 @@ const constructLayerToDna = (_dna = "", _layers = []) => {
       selectedElement: selectedElement,
     };
   });
-  return mappedDnaToLayers;
+  return mappedDnaToLayers.filter((layer, index) => {
+    const dna = _dna.split(DNA_DELIMITER)[index];
+    return dna.indexOf("random") == -1;
+  });
+  // return mappedDnaToLayers;
 };
 
 /**
@@ -252,7 +264,7 @@ const filterDNAOptions = (_dna) => {
     }
     const options = querystring[1].split("&").reduce((r, setting) => {
       const keyPairs = setting.split("=");
-      return { ...r, [keyPairs[0]]: keyPairs[1] };
+      return {...r, [keyPairs[0]]: keyPairs[1]};
     }, []);
 
     return options.bypassDNA;
@@ -286,12 +298,21 @@ const createDna = (_layers) => {
     layer.elements.forEach((element) => {
       totalWeight += element.weight;
     });
+
     // number between 0 - totalWeight
     let random = Math.floor(Math.random() * totalWeight);
     for (var i = 0; i < layer.elements.length; i++) {
       // subtract the current weight from the random weight until we reach a sub zero value.
       random -= layer.elements[i].weight;
       if (random < 0) {
+        if (layer.random) {
+          let random = Math.floor(Math.random() * 10);
+          if (random % 2 == 0) {
+            return randNum.push(
+              `${layer.elements[i].id}:${layer.elements[i].filename}${layer.bypassDNA ? "?bypassDNA=true" : ""}:random`
+            );
+          }
+        }
         return randNum.push(
           `${layer.elements[i].id}:${layer.elements[i].filename}${
             layer.bypassDNA ? "?bypassDNA=true" : ""
@@ -311,8 +332,8 @@ const saveMetaDataSingleFile = (_editionCount) => {
   let metadata = metadataList.find((meta) => meta.edition == _editionCount);
   debugLogs
     ? console.log(
-        `Writing metadata for ${_editionCount}: ${JSON.stringify(metadata)}`
-      )
+      `Writing metadata for ${_editionCount}: ${JSON.stringify(metadata)}`
+    )
     : null;
   fs.writeFileSync(
     `${buildDir}/json/${_editionCount}.json`,
@@ -358,7 +379,7 @@ const startCreating = async () => {
     );
     while (
       editionCount <= layerConfigurations[layerConfigIndex].growEditionSizeTo
-    ) {
+      ) {
       let newDna = createDna(layers);
       if (isDnaUnique(dnaList, newDna)) {
         let results = constructLayerToDna(newDna, layers);
@@ -429,4 +450,4 @@ const startCreating = async () => {
   writeMetaData(JSON.stringify(metadataList, null, 2));
 };
 
-module.exports = { startCreating, buildSetup, getElements };
+module.exports = {startCreating, buildSetup, getElements};
