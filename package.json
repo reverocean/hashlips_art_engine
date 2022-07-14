@@ -19,13 +19,19 @@
     "pixelate": "node utils/pixelate.js",
     "update_info": "node utils/update_info.js",
     "preview_gif": "node utils/preview_gif.js",
-    "generate_metadata": "node utils/generate_metadata.js"
+    "generate_metadata": "node utils/generate_metadata.js",
+    "test": "jest"
   },
   "author": "Daniel Eugene Botha (HashLips)",
   "license": "MIT",
   "dependencies": {
     "canvas": "^2.8.0",
     "gif-encoder-2": "^1.0.5",
+    "lodash": "^4.17.21",
+    "node-xlsx": "^0.21.0",
     "sha1": "^1.1.1"
+  },
+  "devDependencies": {
+    "jest": "^28.1.3"
   }
 }
